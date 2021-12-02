@@ -1,0 +1,42 @@
+Afisam "Introduceti lungimea vectorului:"(msg1)
+
+Citim lungimea vectorului
+
+Mutam lungimea in $t0
+
+Introducem variabilele $t1=0 (numerotare pozitii din 1 in 1)
+		  $t2=0 (numerotare pozitii din 4 in 4)
+		  $t3=10000(minimul)
+		  $t4=0(numarul de aparitii al minimului)
+
+Afisam "Introduceti elementele vectorului:"(msg2)
+
+---FOR:
+Daca $t1>=$t0, adica daca nr de pozitii din 1 in 1>=lungimea vectorului, atunci AFISARE
+CE FACE IN AFISARE? -Afiseaza "Minimul este:"(msg3)
+		       -Afiseaza $t3, adica minimul
+		       -Afiseaza "Numarul de aparitii a valorii minime:"(msg4)
+		       -Afiseaza $t4, adica numarul de aparitii al minimului
+
+Citim numarul de pe pozitie
+
+Il introducem in pozitia sa de vector, respectiv v($t2)
+
+Mutam numarul curent in $t5, apoi, daca $t5==$t3, adica numarul curent==minimul, mergem in ELSE.
+CE FACE IN ELSE? -Adaugam 1 la $t4, adica crestem numarul de aparitii cu 1.
+		-J CONT
+
+Daca $t5<$t3, adica numarul curent<minimul, mergem in IF
+CE FACE IN IF? -$t3 devine $t5, adica minimul devine numarul curent
+	           -$t4 devine 1, adica numarul de aparitii al minimului incepe de la 1
+	           -J CONT
+
+J CONT(MERGE IN CONT)
+
+---CONT:
+Adaugam 1 la $t1, adica crestem cu 1 pozitia
+Adaugam 4 la $t2, adica crestem cu 4 pozitia
+
+J FOR(SE INTOARCE LA FOR)
+
+---EXIT

@@ -1,0 +1,43 @@
+.data
+	str: .asciiz "DJSAHK"
+	ch: .byte 'A'
+	voc1: .byte 'A'
+	voc2: .byte 'E'
+	voc3: .byte 'I'
+	voc4: .byte 'O'
+	voc5: .byte 'U'
+
+.text
+
+main:
+	li $t0, 0		 # $t0 sare pe locatiile din memorie
+	lb $t1, str($t0) 	 # $t1 este byte-ul curent din sirul de caractere
+	lb $t2, ch		 # $t2 este caracterul cautat
+
+loop:
+	beqz $t1, exit 		# daca am ajuns pe byte-ul 0, se opreste executia
+	beq $t1, $t2, verificare	# daca byte-ul curent ($t1) == caracterul ($t2), sarim la verificare
+
+cont:
+	addi $t0, 11	# sarim o locatie de memorie
+	lb $t1, str($t0)	# accesam elementul din locatie
+	j loop		# revenim la inceputul loop-ului
+
+verificare:
+	addi $t0, 1			#sarim o locatie din memorie
+	lb $t1, str($t0)		#accesam elementul din locatie, adica verificam daca urmatorul caracter dupa cel cautat este vocala
+	beq $t1, voc1, loop		#daca este vocala, revenim la loop pentru ca nu e bun
+	beq $t1, voc2, loop
+	beq $t1, voc3, loop
+	beq $t1, voc4, loop
+	beq $t1, voc5, loop
+	j afisare
+
+afisare:
+	move $a0, $t0 	# la afisare, incarcam in $a0 pozitia curenta, din $t0
+	li $v0, 1 		# dam codul de sistem 1
+	syscall 		# apelam sistemul
+
+exit:
+	li $v0, 10
+	syscall

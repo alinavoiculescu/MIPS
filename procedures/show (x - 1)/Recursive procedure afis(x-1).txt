@@ -1,0 +1,67 @@
+# Proceduri recursive
+# void afis(int x)
+# {
+# 	if (x == 0) return;
+#       printf("%d", x);
+#	afis(x - 1);
+# }
+# pentru x = 3, se va afisa 321
+
+.data
+	x: .word 3
+.text
+
+afis:
+	subu $sp, 4
+	sw $fp, 0($sp)		# push $fp
+	addi $fp, $sp, 4
+	
+	# $sp: ($fp v) $fp: (x)
+
+	subu $sp, 4
+	sw $ra, 0($sp)		# push $ra
+
+	# $sp: ($ra v) ($fp v) $fp: (x)
+
+	subu $sp, 4
+	sw $s0, 0($sp)		# push $s0
+
+	# $sp: ($s0 v) ($ra v) ($fp v) $fp: (x)
+
+	lw $s0, 0($fp)		# acum, $s0 este x 
+
+	beqz $s0, exit_afis
+
+	move $a0, $s0
+	li $v0, 1		# print word
+	syscall
+
+	addi $s0, -1		# calculez in $s0 valoarea lui x - 1
+
+	# --- creez un cadru local de apel ---
+	subu $sp, 4
+	sw $s0, 0($sp)		# push (x - 1)
+	jal afis		# call afis
+	addu $sp, 4		# pop
+	# --- finalizare cadru local de apel ---
+
+exit_afis:
+	# restaurarea cadrului de apel
+	# $sp: ($s0 v) ($ra v) ($fp v) $fp: (x)
+	lw $s0, -12($fp)
+	lw $ra, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 12
+	jr $ra
+
+main:
+	lw $t0, x
+	subu $sp, 4
+	sw $t0, 0($sp)		# push x 
+
+	jal afis 		# call afis
+
+	addu $sp, 4		# pop
+
+	li $v0, 10
+	syscall

@@ -1,0 +1,56 @@
+#Sa se scrie o procedura care intoarce prin $v0 valorile -1, 0 sau 1, dupa cum
+#numarul x, incarcat ca argument prin stiva, este negativ, 0 sau pozitiv (functia sgn).
+
+
+.data
+
+.text
+
+sgn:
+	subu $sp, 4
+	sw $fp, 0($sp)
+	addi $fp, $sp, 4
+
+	subu $sp, 4
+	sw $s0, 0($sp)
+
+	lw $s0, 0($fp)
+
+	beqz $s0, zero
+	bgez $s0, pozitiv
+
+negativ:
+	li $v0, -1
+	j exit_sgn
+
+zero:
+	move $v0, $s0
+	j exit_sgn
+
+pozitiv:
+	li $v0, 1
+
+exit_sgn:
+	lw $s0, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 8
+	jr $ra
+
+main:
+	li $v0, 5
+	syscall
+	move $t0, $v0
+
+	subu $sp, 4
+	sw $t0, 0($sp)
+
+	jal sgn
+
+	addu $sp, 4
+
+	move $a0, $v0
+	li $v0, 1
+	syscall
+	
+	li $v0, 10
+	syscall

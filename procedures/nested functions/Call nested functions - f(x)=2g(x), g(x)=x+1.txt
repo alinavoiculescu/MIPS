@@ -1,0 +1,83 @@
+# Apelul imbricat
+# g(x) = x + 1								returneaza prin $v1
+# f(x) = 2 * g(x), adica f sa apeleze intern procedura g 		returneaza prin $v0
+
+.data
+	x: .word 9
+.text
+
+g: 	# g(x) = x + 1
+	# $sp: (x)
+	subu $sp, 4
+	sw $fp, 0($sp)
+	addi $fp, $sp, 4			# PUSH $fp si fac $fp sa pointeze in cadrul de apel
+
+	# $sp: ($fp v)$fp: (x)
+	
+	subu $sp, 4
+	sw $s0, 0($sp)				# PUSH $s0; folosesc $s0 sa retin 0($fp) = x
+
+	# $sp: ($s0 v)($fp v)$fp: (x)
+
+	lw $s0, 0($fp)
+	addi $v1, $s0, 1			# $v1 = x + 1
+
+	# $sp: ($s0 v)($fp v)$fp: (x)
+	lw $s0, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 8
+	jr $ra
+
+
+f:
+	subu $sp, 4
+	sw $fp, 0($sp)
+	addi $fp, $sp, 4			# PUSH $fp; $fp pointeaza in cadrul de apel incepand cu zona argumentelor
+
+	subu $sp, 4
+	sw $ra, 0($sp)				# PUSH $ra; pentru a-i restaura valoarea
+
+	# $sp: ($ra v)($fp v) $fp:(x)
+
+	subu $sp, 4
+	sw $s0, 0($sp)				# PUSH $s0; $s0 va fi folosit pentru stocarea lui x
+
+	lw $s0, 0($fp)
+
+	# trebuie sa apelez g(x); rezultatul va fi gasit in $v1. returnez $v0 = 2 * $v1
+	
+	# creez un cadru local de apel: mai intai, incarc pe stiva argumentele procedurii pe care vreau sa o apelez
+	# execut jal nume_procedura; cand revin din procedura, eliberez cadrul local de apel alocat
+	subu $sp, 4
+	sw $s0, 0($sp)				# PUSH cu valoarea din $s0, care este un x pentru procedura g
+	jal g					# call g
+	addu $sp, 4				# POP; pentru cadrul local de apel
+
+	# stiu ca g a returnat prin $v1
+	mul $v0, $v1, 2				# $v0 = 2 * g(x), fix ceea ce trebuia returnat
+
+	# restauram cadrul de apel
+	# $sp: ($s0 v)($ra v)($fp v)$fp: (x)
+	lw $s0, -12($fp)
+	lw $ra, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 12
+
+	jr $ra
+
+main:
+
+	lw $t0, x
+	subu $sp, 4
+	sw $t0, 0($sp)				# PUSH x
+
+	jal f 					# se sare la f si se retine in $ra (*) adresa urm. instructiuni
+	
+	addu $sp, 4				# POP x
+
+	move $a0, $v0
+	li $v0, 1				# PRINT WORD
+	syscall
+
+	li $v0, 10
+	syscall

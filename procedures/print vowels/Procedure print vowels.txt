@@ -1,0 +1,103 @@
+# sa se scrie o procedura care primeste ca argument adresa unui sir de caractere, format doar din literele mici ale alfabetului 
+# si care afiseaza pe ecran doar vocalele din acest sir, utilizand o procedura este_vocala
+# care returneaza prin registrul $v0 valoarea 1 daca litera primita este vocala, respectiv 0 daca este consoana
+
+.data
+	str: .asciiz "sir de caractere"
+.text
+
+este_vocala:
+	# $sp: (x), unde x este un word, reprezentand codul ASCII al literei
+	# 97 este 'a', 99 este 'c', ...
+	subu $sp, 4
+	sw $fp, 0($sp)		# push $fp
+	addi $fp, $sp, 4	
+
+	# $sp: ($fp v) $fp: (x)
+
+	subu $sp, 4
+	sw $s0, 0($sp)		# push $s0
+
+	lw $s0, 0($fp)		# am incarcat in $s0 ascii-ul literei curente
+
+	beq $s0, 97, et_vocala
+	beq $s0, 101, et_vocala
+	beq $s0, 105, et_vocala
+	beq $s0, 111, et_vocala
+	beq $s0, 117, et_vocala
+
+	li $v0, 0
+	j este_vocala_exit
+
+et_vocala:
+	li $v0, 1
+
+este_vocala_exit:
+	# restaurarea cadrului de apel
+	# $sp: ($s0 v) ($fp v) $fp: (x)
+	lw $s0, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 8
+	jr $ra	
+
+afis:
+	subu $sp, 4
+	sw $fp, 0($sp)		# push $fp
+	addi $fp, $sp, 4	# $fp este pointer in cadrul de apel
+
+	subu $sp, 4
+	sw $ra, 0($sp)		# push $ra
+
+	subu $sp, 4
+	sw $s0, 0($sp)		# push $s0
+
+	# $sp: ($s0 v)($ra v)($fp v) $fp: (*str)
+
+	lw $s0, 0($fp)		# acum, $s0 retine adresa lui str
+
+	# fiecare caracter va fi 0($s0), unde $s0 va creste din 1 in 1 
+	# si, fiind sir de caractere, voi parcurge elementele pana la intalnirea byte-ului 0
+
+for_afis:
+	lb $t0, 0($s0)
+	beqz $t0, exit_afis
+
+	# --- creez un cadru local de apel ---
+	subu $sp, 4
+	sw $t0, 0($sp)		# push cu caracterul curent
+	jal este_vocala		# call este_vocala
+	addu $sp, 4		# pop
+	# --- finalizarea cadrului local de apel ---
+
+	beq $v0, 1, afisez
+cont_for_afis:
+	addi $s0, 1
+	j for_afis
+
+afisez:
+	lb $a0, 0($s0)
+	li $v0, 11		# print byte
+	syscall
+	j cont_for_afis
+
+
+exit_afis:
+	# restaurarea cadrului de apel
+	# $sp: ($s0 v) ($ra v) ($fp v) $fp: (*str)
+	lw $s0, -12($fp)
+	lw $ra, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 12
+	jr $ra
+
+main:
+	la $t0, str
+	subu $sp, 4
+	sw $t0, 0($sp)		# push *str 
+
+	jal afis		# call afis 
+
+	addu $sp, 4		# pop
+
+	li $v0, 10
+	syscall

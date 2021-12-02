@@ -1,0 +1,89 @@
+.data
+	numar1: .asciiz "Introduceti primul numar:"
+	numar2: .asciiz "Introduceti cel de-al doilea numar:"
+	suma: .asciiz "Suma celor 2 numere este:"
+	diferenta: .asciiz "\nDiferenta celor 2 numere este:"
+	produs: .asciiz "\nProdusul celor 2 numere este:"
+	cat: .asciiz "\nCatul impartirii primului numar la cel de-al doilea este:"
+	rest: .asciiz "\nRestul impartirii primului numar la cel de-al doilea este:"
+	
+
+.text
+	li $v0,4
+	la $a0,numar1
+	syscall
+
+	li $v0,5
+	syscall
+	move $t1,$v0
+	
+	li $v0,4
+	la $a0,numar2
+	syscall
+
+	li $v0,5
+	syscall
+	move $t2,$v0
+
+
+
+	add $t0,$t1,$t2
+
+	li $v0,4
+	la $a0,suma
+	syscall
+
+	li $v0,1
+	move $a0,$t0
+	syscall
+
+
+
+	sub $t0,$t1,$t2
+
+	li $v0,4
+	la $a0,diferenta
+	syscall
+
+	li $v0,1
+	move $a0,$t0
+	syscall
+
+
+
+	mul $t0,$t1,$t2
+
+	li $v0,4
+	la $a0,produs
+	syscall
+
+	li $v0,1
+	move $a0,$t0
+	syscall
+
+
+
+	div $t0,$t1,$t2
+
+	li $v0,4
+	la $a0,cat
+	syscall
+
+	li $v0,1
+	move $a0,$t0
+	syscall
+
+
+
+	rem $t0,$t1,$t2
+
+	li $v0,4
+	la $a0,rest
+	syscall
+
+	li $v0,1
+	move $a0,$t0
+	syscall
+
+	li $v0,10
+	syscall

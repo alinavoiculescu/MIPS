@@ -1,0 +1,80 @@
+.data
+	v: .space 400
+	msg1: .asciiz "Introduceti lungimea vectorului:"
+	msg2: .asciiz "\nIntroduceti elementele vectorului:"
+	msg3: .asciiz "\nMinimul este:"
+	msg4: .asciiz "\nNumarul de aparitii a valorii minime este:"
+
+.text
+	
+main:
+	li $v0,4
+	la $a0,msg1
+	syscall
+
+	li $v0,5
+	syscall
+
+	move $t0,$v0		#lungimea e in $t0
+
+	li $t1,0
+	li $t2,0
+	li $t3,10000		#minimul e in $t3
+	li $t4,0			#nr de aparitii e in $t4
+
+	li $v0,4
+	la $a0,msg2
+	syscall
+
+for:
+	bge $t1,$t0,afisare
+
+	li $v0,5
+	syscall
+
+	sw $v0,v($t2)	#din $v0 nr se duce in pozitia sa in vector
+
+	lw $t5,v($t2)	#nr curent din vector e in $t5
+	beq $t5,$t3,else	#daca valoarea este egala cu minimul, adaugam 1 la nr de aparitii
+
+	blt $t5,$t3,if	#daca valoarea e mai mica decat minimul, minimul devine valoarea si nr aparitiilor devine 1
+
+	j cont
+
+cont:
+	addi $t1,$t1,1
+	addi $t2,$t2,4
+
+	j for
+
+if:
+	move $t3,$t5
+	li $t4,1
+
+	j cont
+
+else:
+	addi $t4,$t4,1
+
+	j cont
+
+afisare:
+	li $v0,4
+	la $a0,msg3
+	syscall
+
+	li $v0,1
+	move $a0,$t3
+	syscall
+
+	li $v0,4
+	la $a0,msg4
+	syscall
+
+	li $v0,1
+	move $a0,$t4
+	syscall
+
+exit:
+	li $v0,10
+	syscall

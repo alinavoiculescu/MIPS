@@ -1,0 +1,69 @@
+# Sa se afiseze la standard output matricea matrix stocata in memorie
+
+.data
+	matrix:  .word 10, 20,  30,  40
+		 .word 50, 60,  70,  80
+		 .word 90, 100, 110, 120
+	lines:   .word 3
+	columns: .word 4
+	spStr:   .asciiz " "
+	nLStr:	 .asciiz "\n"
+.text
+
+main:
+
+	lw $t0, lines				# $t0 va fi numarul de linii
+	lw $t1, columns				# $t1 va fi numarul de coloane
+
+	li $t2, 0
+for_lines:
+	bge $t2, $t0, et_exit
+	
+	li $t4, 0
+	for_columns:
+		bge $t4, $t1, cont_for_lines
+
+		# trebuie sa afisez pe ecran
+		# elementul dat de matrix[$t2][$t4]
+		# si un spatiu
+
+		# m[lineIndex][columnIndex]
+		# elementul meu in asm este 
+		# m(4*(lineIndex * columns + columnIndex))
+
+		mul $t5, $t2, $t1		# $t5 = lineIndex * columns
+		add $t5, $t5, $t4		# $t5 = $t5 + columnIndex
+		mul $t5, $t5, 4			# $t5 = $t5 * 4
+
+		lw $a0, matrix($t5)
+		li $v0, 1			# PRINT INT
+		syscall
+
+
+		la $a0, spStr
+		li $v0, 4			# PRINT STRING
+		syscall
+
+		addi $t4, 1
+		j for_columns
+
+cont_for_lines:
+	la $a0, nLStr
+	li $v0, 4				# PRINT STRING
+	syscall
+
+	addi $t2, 1
+	j for_lines
+
+et_exit:
+	li $v0, 10
+	syscall
+
+# for ($t2 = 0; $t2 < $t0; $t2++)
+# {
+#  	for ($t4 = 0; $t4 < $t1; $t4++)
+#	{
+#		printf("%d ", matrix[$t2][$t4]);
+#	}
+#	printf("\n");
+# }

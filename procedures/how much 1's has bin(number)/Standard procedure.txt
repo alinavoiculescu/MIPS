@@ -1,0 +1,70 @@
+# sa se implementeze procedura nrUnuBinar 
+# care determina numarul de cifre de 1 care apare in reprezentarea binara a argumentului x
+# nrUnuBinar(7) = 3 (7 = 111)
+# nrUnuBinar(10) = 2 (10 = 1010) ... 
+# returneaza prin $v0
+# apel standard; apel recursiv 
+
+# Varianta 1: apel standard
+.data
+	x: .word 10
+.text
+
+nrUnuBinar:
+	# $sp:(x)
+	subu $sp, 4
+	sw $fp, 0($sp)		# push $fp
+	# $sp:($fp v)(x)
+
+	addi $fp, $sp, 4 	# $fp := $sp + 4
+
+	# $sp:($fp v)$fp:(x)
+	# daca folosesc registrii din clasa $s, trebuie sa le restaurez valoarea
+	# adica de oricate ori voi utiliza un registru $s, ii voi pune valoarea pe stiva
+	# NU se aplica acest comportament si in cazul registrilor $t 
+
+	subu $sp, 4
+	sw $s0, 0($sp)		# push $s0
+
+	# $sp:($s0 v)($fp v)$fp:(x)
+
+	lw $s0, 0($fp)		# in $s0 am valoarea lui x 
+
+	# while (x != 0) { sum += x % 2; x /= 2; }
+	# while ($s0 != 0) { $v0 += rem $s0, 2; div $s0, $s0, 2} 
+
+et_while:
+	beqz $s0, exit_nrUnuBinar
+	rem $t0, $s0, 2		# $t0 := $s0 % 2
+	add $v0, $v0, $t0	# $v0 += $t0 (sum += x % 2)
+	div $s0, $s0, 2		# $s0 := $s0 / 2
+	j et_while
+
+exit_nrUnuBinar:
+	# restaurarea cadrului de apel
+	# $sp:($s0 v)($fp v)$fp:(x)
+	lw $s0, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 8
+	jr $ra			# return
+
+main:
+	lw $t0, x
+	
+	subu $sp, 4		# aloc spatiu pe stiva
+	sw $t0, 0($sp)		# push x - completez x in varful stivei
+
+	li $v0, 0
+	jal nrUnuBinar		# call nrUnuBinar
+				# jump and link
+				# 1. completeaza in $ra adresa urmatoarei instructiuni din main, pentru a sti unde revenim din procedura
+				# 2. sare la eticheta nrUnuBinar (j nrUnuBinar)
+
+	addu $sp, 4		# pop din stiva; (pop x)
+
+	move $a0, $v0
+	li $v0, 1		# PRINT WORD
+	syscall
+
+	li $v0, 10		# EXIT
+	syscall

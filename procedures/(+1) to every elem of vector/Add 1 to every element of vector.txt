@@ -1,0 +1,89 @@
+# Fie v un array in memorie. Sa se scrie o procedura modif(*v, n) care sa modifice fiecare element, adaugandu-i valoarea 1.
+# input: v = [1, 2, 3, 4] => output: v = [2, 3, 4, 5]
+
+.data
+	v: .word 1, 2, 3, 4, 5
+	n: .word 5
+	strsp: .asciiz " "
+.text
+
+modif:
+	# $sp: (*v)(n)
+	subu $sp, 4
+	sw $fp, 0($sp)				# PUSH $fp
+	addi $fp, $sp, 4			# pozitionez $fp in cadrul de apel
+
+	# $sp: ($fp v)$fp:(*v)(n)
+
+	# vreau doua variabile locale (registri $s) pentru *v si n
+	
+	subu $sp, 4
+	sw $s0, 0($sp)				# PUSH $s0
+
+	subu $sp, 4
+	sw $s1, 0($sp)				# PUSH $s1
+
+	# $sp: ($s1 v)($s0 v)($fp v)$fp: (*v)(n)
+
+	lw $s0, 0($fp)				# este un word care codifica adresa lui v in memorie
+	lw $s1, 4($fp)				# n
+
+# for (int i = 0; i < n; i++) v[i] = v[i] + 1;
+
+	li $t0, 0				# este i-ul curent
+et_modif_for:
+	# vreau sa ma refer la v doar prin intermediul lui $s0
+	bge $t0, $s1, exit_modif
+	lw $t1, 0($s0)				# am pus in $t1 elementul curent, v[$t0]
+	addi $t1, 1				# aplic modificarea ceruta
+	sw $t1, 0($s0)				# l-am modificat, si acum il salvez inapoi in memorie
+						# t1 = v[i]; t1++; v[i] = t1;
+
+	addi $t0, 1
+	addi $s0, 4
+	j et_modif_for
+
+
+exit_modif:
+	# restaurare a cadrului de apel
+	# $sp: ($s1 v)($s0 v)($fp v)$fp: (*v)(n)
+	lw $s1, -12($fp)
+	lw $s0, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 12
+	jr $ra
+
+main:
+	lw $t0, n
+	subu $sp, 4
+	sw $t0, 0($sp)				# PUSH n
+
+	la $t0, v
+	subu $sp, 4
+	sw $t0, 0($sp)				# PUSH *v
+
+	jal modif 
+
+	addu $sp, 8				# POP (*v); POP (n)
+
+	lw $t0, n
+	li $t1, 0				# pe post de i
+	li $t2, 0				# sare locatii de memorie din 4 in 4
+et_afis:
+	# for ($t1 = 0; $t1 < $t0; $t1++) { printf("%d ", v($t2)); }
+	bge $t1, $t0, et_exit
+	lw $a0, v($t2)
+	li $v0, 1				# PRINT WORD
+	syscall
+
+	la $a0, strsp
+	li $v0, 4				# PRINT STRING
+	syscall
+
+	addi $t1, 1
+	addi $t2, 4
+	j et_afis
+
+et_exit:
+	li $v0, 10
+	syscall

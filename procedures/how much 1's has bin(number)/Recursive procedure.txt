@@ -1,0 +1,72 @@
+# varianta recursiva pentru nrUnuBinar
+.data
+	x: .word 10
+.text
+
+# ce se intampla cand avem un apel imbricat? $ra este suprascris in urma apelului
+# si cauzeaza, astfel, un ciclu infinit
+# solutia este sa restauram $ra-ul, adica sa-l punem pe stiva la inceputul procedurii
+
+# int nrUnuBinar(int x)
+# {
+#   if (x == 0) return 0;
+#   return x % 2 + nrUnuBinar(x / 2);
+# }
+
+
+nrUnuBinar:
+	subu $sp, 4
+	sw $fp, 0($sp)
+	addi $fp, $sp, 4		# cele trei linii standard, punem $fp pe stiva si-l facem pointer in cadrul de apel
+
+	subu $sp, 4
+	sw $ra, 0($sp)			# facem push cu $ra pentru a nu-i pierde valoarea 
+
+	subu $sp, 4
+	sw $s0, 0($sp)			# push cu $s0, iar in $s0 vom retine argumentul curent 
+
+	# $sp:($s0 v)($ra v)($fp v)$fp:(x)
+
+	lw $s0, 0($fp)			# acum, $s0 retine valoarea lui x 
+
+	beqz $s0, exit_nrUnuBinar
+
+	# daca nu a ajuns pe 0, adaug prima data cifra la $v0
+	rem $t0, $s0, 2			# $t0 := $s0 % 2, i.e. cifra curenta
+	add $v0, $v0, $t0 
+
+	div $s0, $s0, 2			# $s0 := $s0 / 2
+
+	# cadru local de apel
+	subu $sp, 4
+	sw $s0, 0($sp)
+	jal nrUnuBinar
+	addu $sp, 4
+	# sfarsitul cadrului local de apel
+
+
+exit_nrUnuBinar:
+	# restaurarea cadrului de apel
+	# $sp:($s0 v)($ra v)($fp v)$fp:(x)
+	lw $s0, -12($fp)
+	lw $ra,	-8($fp)
+	lw $fp,	-4($fp)
+	addu $sp, 12
+	jr $ra 
+
+main:
+	lw $t0, x
+	subu $sp, 4
+	sw $t0, 0($sp)
+
+	li $v0, 0
+	jal nrUnuBinar 
+
+	addu $sp, 4
+	
+	move $a0, $v0
+	li $v0, 1
+	syscall
+
+	li $v0, 10
+	syscall

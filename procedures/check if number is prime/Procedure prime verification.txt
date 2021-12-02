@@ -1,0 +1,76 @@
+# Sa se implementeze procedura prim(x). returneaza in $v0
+# if (x < 2) return 0;
+# if (x == 2) return 1;
+# if (x % 2 == 0) return 0;
+# for (int i = 3; i * i <= x; i+=2)
+#	if (x % i == 0) return 0;
+# return 1
+
+.data
+	x: .word 31
+.text
+
+prim:
+	# $sp: (x)
+	subu $sp, 4
+	sw $fp, 0($sp)				# PUSH $fp; o conventie MIPS si C 
+	addi $fp, $sp, 4
+
+	# $sp: ($fp v) $fp:(x)			# $fp pointeaza incepand cu zona argumentelor procedurii
+
+	# vreau un registru pe post de variabila locala --> registrii $s
+	# voi folosi $s0 pentru a stoca valoarea lui x --> 0($fp)
+
+	subu $sp, 4
+	sw $s0, 0($sp)				# PUSH $s0
+
+	# $sp: ($s0 v)($fp v)$fp: (x)
+
+	lw $s0, 0($fp)				# acum am valoarea lui x in $s0
+
+	blt $s0, 2, nu_e_prim
+	beq $s0, 2, e_prim
+	rem $t0, $s0, 2
+	beqz $t0, nu_e_prim
+
+	li $t0, 3				# pe post de i
+et_for:
+	# for ($t0 = 3; $t0 * $t0 <= $s0; $t0 += 2)
+	mul $t1, $t0, $t0
+	bgt $t1, $s0, e_prim
+	rem $t2, $s0, $t0
+	beqz $t2, nu_e_prim
+	addi $t0, 2
+	j et_for
+
+nu_e_prim:
+	li $v0, 0
+	j exit_prim
+
+e_prim:
+	li $v0, 1
+
+exit_prim:
+	# restaurare de cadru de apel
+	# $sp: ($s0 v)($fp v)$fp: (x)
+	lw $s0, -8($fp)
+	lw $fp, -4($fp)
+	addu $sp, 8
+	jr $ra 					# ret
+
+main:
+	lw $t0, x
+	subu $sp, 4				# fac un spatiu de 4 bytes = 1 word pe stiva
+	sw $t0, 0($sp)				# PUSH x
+
+	jal prim				# call prim
+						# si retine in $ra adresa urmatoarei instructiuni de dupa jal prim
+
+	addu $sp, 4				# POP (x);
+
+	move $a0, $v0
+	li $v0, 1				# PRINT WORD
+	syscall
+	
+	li $v0, 10
+	syscall

@@ -1,0 +1,34 @@
+3. Fie 0X00A1E0TU, unde primii 2 biti din octetul T sunt 10. Care sunt toate informatiile ce pot fi obtinute?
+
+Rezolvare:
+
+reprezentare hexa: 0X00A1E0TU
+reprezentare binara: 0000 0000 1010 0001 1110 0000 10_ _   _ _ _ _
+
+op = 000000
+rs = 00101 = $5 = $a1
+rt = 00001 = $1 = $at
+rd = 11100 = $28 = $gp
+shamt = 00010 = 2
+funct = _ _ _ _ _ _
+
+Cazul 1: (shift left logical)
+sll $gp, $a1, 2   =>  funct = 000000
+reprezentare binara: 0000 0000 1010 0001 1110 0000 1000 0000
+reprezentare hexa: 0X00A1E080
+T = 8
+U = 0
+
+Cazul 2: (shift right logical)
+srl $gp, $a1, 2   =>  funct = 000010
+reprezentare binara: 0000 0000 1010 0001 1110 0000 1000 0010
+reprezentare hexa: 0X00A1E082
+T = 8
+U = 2
+
+Cazul 3: (shift right arithmetic)
+sra $gp, $a1, 2   =>  funct = 000011
+reprezentare binara: 0000 0000 1010 0001 1110 0000 1000 0011
+reprezentare hexa: 0X00A1E083
+T = 8
+U = 3

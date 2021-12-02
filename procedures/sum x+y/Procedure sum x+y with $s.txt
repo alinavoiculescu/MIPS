@@ -1,0 +1,69 @@
+# calculez suma a doua numere printr-o procedura
+# suma (x, y)
+.data
+	x: .word 15
+	y: .word 30
+.text
+
+suma:
+	# prin conventie, trebuie sa utilizeze registrul $fp
+	# acest registru trebuie sa fie si restaurat => ii punem valoarea pe stiva
+	subu $sp, 4
+	sw $fp, 0($sp)			# PUSH $fp
+
+	# $sp:($fp v)(x)(y)
+
+	# dar $fp trebuie sa pointeze fix in cadrul de apel
+	# si aleg sa pointeze incepand cu zona argumentelor 
+
+	addi $fp, $sp, 4
+	# $sp:($fp v)$fp:(x) (y)
+
+	# mai am nevoie de doua variabile locale
+	# care sunt, de fapt, registrii $s0 si $s1
+
+	# pentru ca registrii $s trebuie restaurati in urma apelului
+	# inseamna ca si ei trebuie sa fie pusi pe stiva
+
+	subu $sp, 4
+	sw $s0, 0($sp)			# PUSH $s0
+
+	subu $sp, 4
+	sw $s1, 0($sp)			# PUSH $s1
+
+	# $sp:($s1 v)($s0 v)($fp v)$fp:(x) (y)
+
+	lw $s0, 0($fp)
+	lw $s1, 4($fp)
+
+	add $v0, $s0, $s1
+
+	# restaurarea cadrului de apel
+	lw $s1, -12($fp)		# restaurez $s1
+	lw $s0, -8($fp)			# restaures $s0
+	lw $fp, -4($fp)			# restaures $fp
+	addu $sp, 12			# POP $s1; POP $s0; POP $fp
+
+	jr $ra
+
+main:
+	lw $t0, y
+	subu $sp, 4			# PUSH y
+	sw $t0, 0($sp)
+
+	lw $t0, x
+	subu $sp, 4			# PUSH x
+	sw $t0, 0($sp)
+
+	# $sp:(x)(y)
+
+	jal suma			# CALL suma
+
+	addu $sp, 8			# POP x; POP y
+
+	move $a0, $v0
+	li $v0, 1			# PRINT INT
+	syscall
+
+	li $v0, 10
+	syscall
