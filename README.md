@@ -1,2 +1,1 @@
-# MIPS
-MIPS architecture
+# MIPS architecture
